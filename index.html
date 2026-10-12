@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartAI Developer Console</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #0b0e14;
+            color: #e2e8f0;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar Design Like SmartAI Console */
+        .sidebar {
+            width: 280px;
+            background-color: #11151d;
+            border-right: 1px solid #1e293b;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .logo-area {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #10b981;
+            /* SmartAI Green Logo Theme */
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .btn-primary:hover {
+            background-color: #059669;
+        }
+
+        .key-list-title {
+            margin-top: 35px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 0.05em;
+        }
+
+        .key-display-box {
+            background: #1e293b;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            border: 1px solid #334155;
+            color: #3b82f6;
+        }
+
+        /* Main Chat Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #0b0e14;
+        }
+
+        .top-bar {
+            background-color: #11151d;
+            padding: 15px 25px;
+            border-bottom: 1px solid #1e293b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 14px 18px;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+
+        .user {
+            background-color: #10b981;
+            color: white;
+            align-self: flex-end;
+        }
+
+        .ai {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            align-self: flex-start;
+            border: 1px solid #334155;
+        }
+
+        .input-area {
+            padding: 20px 30px;
+            background-color: #11151d;
+            border-top: 1px solid #1e293b;
+            display: flex;
+            gap: 15px;
+        }
+
+        .input-area textarea {
+            flex: 1;
+            background-color: #0b0e14;
+            border: 1px solid #334155;
+            color: white;
+            padding: 14px;
+            border-radius: 8px;
+            resize: none;
+            height: 24px;
+            font-size: 1rem;
+        }
+
+        .input-area button {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .input-area button:hover {
+            background-color: #2563eb;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR: SMARTAI KEY GENERATOR SECTION -->
+    <div class="sidebar">
+        <div class="logo-area">🧠 smartAI <span
+                style="font-size:0.8rem; background:#1e293b; padding:2px 6px; border-radius:4px; color:#64748b;">KEY</span>
+        </div>
+        <button class="btn-primary" onclick="createNewApiKey()">➕ Create SmartAI Key</button>
+
+        <div class="key-list-title">Your Active Keys</div>
+        <div id="keysContainer">
+            <div class="key-display-box" style="color: #94a3b8;">sk-my-llama-key-111</div>
+        </div>
+    </div>
+
+    <!-- MAIN CHAT INTERFACE -->
+    <div class="main-content">
+        <div class="top-bar">
+            <span style="font-weight: 600;">SmartAI Key Playground</span>
+            <div>
+                <span style="font-size: 0.9rem; color:#64748b; margin-right: 10px;">Using Key:</span>
+                <input type="text" id="activeKeyInput"
+                    style="background:#11151d; border:1px solid #334155; color:#3b82f6; padding:6px; border-radius:4px; width:180px;"
+                    value="sk-my-llama-key-111">
+            </div>
+        </div>
+
+        <div class="chat-container" id="chatBox">
+            <div class="message ai">Welcome to the SmartAI Developer Console. Generate a new key from the sidebar or use
+                the active key to run your local AI model.</div>
+        </div>
+
+        <div class="input-area">
+            <textarea id="userInput" placeholder="Send a test API request..."></textarea>
+            <button onclick="sendMessage()">Run API</button>
+        </div>
+    </div>
+
+    <script>
+        async function createNewApiKey() {
+            const name = prompt("Enter Key Name (e.g., Test_App, Friend_Key):");
+            if (!name) return;
+
+            try {
+                const res = await fetch('http://localhost:8001/v1/keys/generate?username=' + encodeURIComponent(name), {
+                    method: 'POST'
+                });
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    const container = document.getElementById('keysContainer');
+                    const keyDiv = document.createElement('div');
+                    keyDiv.className = 'key-display-box';
+                    keyDiv.textContent = data.api_key;
+                    container.appendChild(keyDiv);
+
+                    document.getElementById('activeKeyInput').value = data.api_key;
+                    alert(`Success! New SmartAI Key Generated for ${name}.`);
+                }
+            } catch (err) {
+                alert("Error connecting to SmartAI server.");
+            }
+        }
+
+        async function sendMessage() {
+            const inputField = document.getElementById('userInput');
+            const chatBox = document.getElementById('chatBox');
+            const activeKey = document.getElementById('activeKeyInput').value.trim();
+            const messageText = inputField.value.trim();
+
+            if (!messageText) return;
+
+            const userDiv = document.createElement('div');
+            userDiv.className = 'message user';
+            userDiv.textContent = messageText;
+            chatBox.appendChild(userDiv);
+            inputField.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const aiDiv = document.createElement('div');
+            aiDiv.className = 'message ai';
+            aiDiv.textContent = 'Streaming response from SmartAI...';
+            chatBox.appendChild(aiDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const response = await fetch('http://localhost:8001/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${activeKey}`
+                    },
+                    body: JSON.stringify({
+                        model: "llama3.2",
+                        messages: [{ role: "user", content: messageText }],
+                        stream: false
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    aiDiv.textContent = data.choices[0].message.content;
+                } else {
+                    aiDiv.textContent = `Error ${response.status}: ${data.detail || 'Access Denied'}`;
+                }
+            } catch (err) {
+                aiDiv.textContent = "Error: SmartAI API Connection Failed.";
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>
