@@ -7,7 +7,7 @@ import secrets
 import sqlite3
 import os
 
-app = FastAPI(title="SmartAI Cloud Production Server")
+app = FastAPI(title="SmartAI DeepSeek Unlimited Gateway")
 
 app.add_middleware(
     CORSMiddleware,
@@ -19,7 +19,7 @@ app.add_middleware(
 
 security = HTTPBearer()
 
-# क्लाउड डेटाबेस सेटअप
+# डेटाबेस सेटअप (हमेशा चाबियों को याद रखेगा)
 def init_db():
     conn = sqlite3.connect("smartai.db")
     cursor = conn.cursor()
@@ -36,7 +36,7 @@ def init_db():
 init_db()
 
 class ChatRequest(BaseModel):
-    model: str = "llama-3.2-3b-preview" # Groq का सुपरफास्ट मॉडल
+    model: str = "deepseek-r1-distill-llama-70b" # 🚀 असली DeepSeek R1 मॉडल (फ्री और सुपरफास्ट)
     messages: list
 
 @app.post("/v1/keys/generate")
@@ -51,7 +51,7 @@ async def generate_new_key(username: str = "Developer"):
     return {"status": "success", "api_key": new_key, "owner": username}
 
 @app.post("/v1/chat/completions")
-async def chat_with_llama(request: ChatRequest, token: HTTPAuthorizationCredentials = Depends(security)):
+async def chat_with_deepseek(request: ChatRequest, token: HTTPAuthorizationCredentials = Depends(security)):
     user_key = token.credentials
     
     conn = sqlite3.connect("smartai.db")
@@ -63,7 +63,7 @@ async def chat_with_llama(request: ChatRequest, token: HTTPAuthorizationCredenti
     if not result:
         raise HTTPException(status_code=403, detail="Invalid SmartAI Key.")
     
-    # Groq Cloud API को कॉल करना
+    # Groq Cloud के ज़रिए DeepSeek को बिना किसी लिमिट के कॉल करना
     GROQ_API_KEY = os.getenv("GROQ_API_KEY")
     groq_url = "https://groq.com"
     
@@ -72,8 +72,9 @@ async def chat_with_llama(request: ChatRequest, token: HTTPAuthorizationCredenti
         "Content-Type": "application/json"
     }
     
+    # अगर क्लाइंट ने कोई और मॉडल माँगा, तो भी हम उसे डिफ़ॉल्ट DeepSeek पर ही चलाएंगे ताकि लिमिट न लगे
     payload = {
-        "model": request.model,
+        "model": "deepseek-r1-distill-llama-70b", 
         "messages": request.messages
     }
     
