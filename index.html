@@ -5,268 +5,363 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SmartAI Developer Console</title>
+    <link href="https://cloudflare.com" rel="stylesheet">
     <style>
+        :root {
+            --bg-dark: #0d1117;
+            --panel-dark: #161b22;
+            --border-color: #30363d;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #2ea44f;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #0b0e14;
-            color: #e2e8f0;
             margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
             display: flex;
             height: 100vh;
-        }
-
-        /* Sidebar Design Like SmartAI Console */
-        .sidebar {
-            width: 280px;
-            background-color: #11151d;
-            border-right: 1px solid #1e293b;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .logo-area {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: #10b981;
-            /* SmartAI Green Logo Theme */
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-primary {
-            background-color: #10b981;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            text-align: center;
-        }
-
-        .btn-primary:hover {
-            background-color: #059669;
-        }
-
-        .key-list-title {
-            margin-top: 35px;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            color: #64748b;
-            letter-spacing: 0.05em;
-        }
-
-        .key-display-box {
-            background: #1e293b;
-            padding: 10px;
-            border-radius: 6px;
-            margin-top: 10px;
-            font-family: monospace;
-            font-size: 0.9rem;
-            word-break: break-all;
-            border: 1px solid #334155;
-            color: #3b82f6;
-        }
-
-        /* Main Chat Area */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background-color: #0b0e14;
-        }
-
-        .top-bar {
-            background-color: #11151d;
-            padding: 15px 25px;
-            border-bottom: 1px solid #1e293b;
-            display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
         }
 
-        .chat-container {
-            flex: 1;
-            padding: 30px;
-            overflow-y: auto;
+        .auth-container {
+            background-color: var(--panel-dark);
+            border: 1px solid var(--border-color);
+            padding: 40px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
 
-        .message {
-            max-width: 70%;
-            padding: 14px 18px;
-            border-radius: 8px;
-            line-height: 1.6;
-        }
-
-        .user {
-            background-color: #10b981;
+        .auth-header {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
             color: white;
-            align-self: flex-end;
         }
 
-        .ai {
-            background-color: #1e293b;
-            color: #e2e8f0;
-            align-self: flex-start;
-            border: 1px solid #334155;
+        .auth-header span {
+            color: var(--accent-green);
         }
 
-        .input-area {
-            padding: 20px 30px;
-            background-color: #11151d;
-            border-top: 1px solid #1e293b;
+        .input-group {
             display: flex;
-            gap: 15px;
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .input-area textarea {
-            flex: 1;
-            background-color: #0b0e14;
-            border: 1px solid #334155;
+        .input-group label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .auth-input {
+            background-color: #070a0e;
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 6px;
             color: white;
-            padding: 14px;
-            border-radius: 8px;
-            resize: none;
-            height: 24px;
-            font-size: 1rem;
+            font-size: 14px;
         }
 
-        .input-area button {
-            background-color: #3b82f6;
+        .btn-auth {
+            background-color: var(--accent-blue);
             color: white;
             border: none;
-            padding: 0 25px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 6px;
             font-weight: bold;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .switch-mode-text {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
             cursor: pointer;
         }
 
-        .input-area button:hover {
-            background-color: #2563eb;
+        .switch-mode-text span {
+            color: var(--accent-blue);
+            text-decoration: underline;
+        }
+
+        .dashboard-layout {
+            display: none;
+            width: 100%;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: var(--panel-dark);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .logo span {
+            color: var(--accent-green);
+        }
+
+        .btn-generate {
+            background-color: var(--accent-green);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .keys-section {
+            margin-top: 25px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .keys-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .key-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .header-panel {
+            background-color: var(--panel-dark);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .endpoint-box {
+            background: #070a0e;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            border: 1px solid var(--border-color);
+            color: var(--accent-blue);
+            margin-top: 8px;
+        }
+
+        .playground-container {
+            flex-grow: 1;
+            background-color: var(--panel-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .msg {
+            padding: 12px 16px;
+            border-radius: 8px;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+
+        .msg.user {
+            background: #1f6feb;
+            align-self: flex-end;
+            color: white;
+        }
+
+        .msg.ai {
+            background: #21262d;
+            align-self: flex-start;
+            border: 1px solid var(--border-color);
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            background: #070a0e;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .btn-send {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- SIDEBAR: SMARTAI KEY GENERATOR SECTION -->
-    <div class="sidebar">
-        <div class="logo-area">🧠 smartAI <span
-                style="font-size:0.8rem; background:#1e293b; padding:2px 6px; border-radius:4px; color:#64748b;">KEY</span>
-        </div>
-        <button class="btn-primary" onclick="createNewApiKey()">➕ Create SmartAI Key</button>
+    <!-- 🔐 1. DeepSeek Style Auth Panel (Login / Sign Up) -->
+    <div class="auth-container" id="auth-screen">
+        <div class="auth-header" id="panel-title"><i class="fas fa-user-shield"></i> smartAI <span>SIGN IN</span></div>
+        <p style="color: var(--text-muted); font-size: 13px; text-align: center; margin: 0;" id="panel-subtitle">
+            Developer Cloud Authentication</p>
 
-        <div class="key-list-title">Your Active Keys</div>
-        <div id="keysContainer">
-            <div class="key-display-box" style="color: #94a3b8;">sk-my-llama-key-111</div>
+        <div class="input-group">
+            <label>Email ID</label>
+            <input type="email" id="email" class="auth-input" placeholder="admin@smartai.com">
+        </div>
+
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="password" class="auth-input" placeholder="••••••••">
+        </div>
+
+        <button class="btn-auth" id="main-auth-btn" onclick="handleAuth()">Sign In</button>
+
+        <div class="switch-mode-text" id="switch-mode-link" onclick="toggleMode()">
+            Don't have an account? <span>Sign Up here</span>
         </div>
     </div>
 
-    <!-- MAIN CHAT INTERFACE -->
-    <div class="main-content">
-        <div class="top-bar">
-            <span style="font-weight: 600;">SmartAI Key Playground</span>
-            <div>
-                <span style="font-size: 0.9rem; color:#64748b; margin-right: 10px;">Using Key:</span>
-                <input type="text" id="activeKeyInput"
-                    style="background:#11151d; border:1px solid #334155; color:#3b82f6; padding:6px; border-radius:4px; width:180px;"
-                    value="sk-my-llama-key-111">
+    <!-- 🌐 2. Dashboard Layout Section -->
+    <div class="dashboard-layout" id="main-dashboard">
+        <div class="sidebar">
+            <div class="logo"><i class="fas fa-brain"></i> smartAI <span>KEY</span></div>
+            <button class="btn-generate" onclick="generateKey()">
+                <i class="fas fa-plus"></i> Create API Key
+            </button>
+            <div class="keys-section">
+                <div class="keys-title">Your Active API Keys</div>
+                <div id="keys-list">
+                    <div class="key-item">sk-smartai-admin-key</div>
+                </div>
             </div>
         </div>
 
-        <div class="chat-container" id="chatBox">
-            <div class="message ai">Welcome to the SmartAI Developer Console. Generate a new key from the sidebar or use
-                the active key to run your local AI model.</div>
-        </div>
+        <div class="main-content">
+            <div class="header-panel">
+                <h2><i class="fas fa-code"></i> SmartAI Developer Gateway</h2>
+                <p style="color: var(--text-muted); margin: 5px 0 15px 0;">Use this Base URL and your generated API Key
+                    to integrate into any app without limits.</p>
+                <strong>Your API Base URL (Endpoint):</strong>
+                <div class="endpoint-box" id="base-url-text">https://onrender.com</div>
+            </div>
 
-        <div class="input-area">
-            <textarea id="userInput" placeholder="Send a test API request..."></textarea>
-            <button onclick="sendMessage()">Run API</button>
+            <div class="playground-container">
+                <div
+                    style="padding: 15px; border-bottom: 1px solid var(--border-color); font-weight: bold; display:flex; justify-content:space-between;">
+                    <span><i class="fas fa-terminal"></i> API Chat Testing Playground</span>
+                    <span id="active-key-badge" style="color: var(--accent-green); font-size:12px;">Using Key:
+                        sk-smartai-admin-key</span>
+                </div>
+                <div class="chat-messages" id="chat-box">
+                    <div class="msg ai">Welcome to the smartAI Console. Create a fresh key from the sidebar or type a
+                        message to test your independent API connection.</div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" class="chat-input" id="user-input" placeholder="Ask smartAI anything..."
+                        onkeypress="if(event.key === 'Enter') sendStreamChat()">
+                    <button class="btn-send" onclick="sendStreamChat()">Send API Request</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        async function createNewApiKey() {
-            const name = prompt("Enter Key Name (e.g., Test_App, Friend_Key):");
-            if (!name) return;
+        // ⚠️ यहाँ अपना सही Render लिंक पेस्ट करें
+        const RENDER_BACKEND_URL = "https://onrender.com";
+        let currentApiKey = "sk-smartai-admin-key";
+        let isSignUpMode = false;
 
-            try {
-                const res = await fetch('http://localhost:8001/v1/keys/generate?username=' + encodeURIComponent(name), {
-                    method: 'POST'
-                });
-                const data = await res.json();
+        document.getElementById("base-url-text").innerText = `${RENDER_BACKEND_URL}/v1`;
 
-                if (data.status === "success") {
-                    const container = document.getElementById('keysContainer');
-                    const keyDiv = document.createElement('div');
-                    keyDiv.className = 'key-display-box';
-                    keyDiv.textContent = data.api_key;
-                    container.appendChild(keyDiv);
+        // लॉगिन और साइनअप मोड स्विच करने का फंक्शन
+        function toggleMode() {
+            isSignUpMode = !isSignUpMode;
+            const title = document.getElementById("panel-title");
+            const btn = document.getElementById("main-auth-btn");
+            const link = document.getElementById("switch-mode-link");
 
-                    document.getElementById('activeKeyInput').value = data.api_key;
-                    alert(`Success! New SmartAI Key Generated for ${name}.`);
-                }
-            } catch (err) {
-                alert("Error connecting to SmartAI server.");
+            if (isSignUpMode) {
+                title.innerHTML = `<i class="fas fa-user-plus"></i> smartAI <span>SIGN UP</span>`;
+                btn.innerText = "Create Account";
+                link.innerHTML = `Already have an account? <span>Sign In here</span>`;
+            } else {
+                title.innerHTML = `<i class="fas fa-user-shield"></i> smartAI <span>SIGN IN</span>`;
+                btn.innerText = "Sign In";
+                link.innerHTML = `Don't have an account? <span>Sign Up here</span>`;
             }
         }
 
-        async function sendMessage() {
-            const inputField = document.getElementById('userInput');
-            const chatBox = document.getElementById('chatBox');
-            const activeKey = document.getElementById('activeKeyInput').value.trim();
-            const messageText = inputField.value.trim();
+        // सबमिशन हैंडलर
+        async function handleAuth() {
+            const emailInput = document.getElementById("email").value.trim();
+            const passInput = document.getElementById("password").value.trim();
+            if (!emailInput || !passInput) { alert("Please fill all fields."); return; }
 
-            if (!messageText) return;
-
-            const userDiv = document.createElement('div');
-            userDiv.className = 'message user';
-            userDiv.textContent = messageText;
-            chatBox.appendChild(userDiv);
-            inputField.value = '';
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            const aiDiv = document.createElement('div');
-            aiDiv.className = 'message ai';
-            aiDiv.textContent = 'Streaming response from SmartAI...';
-            chatBox.appendChild(aiDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
+            const endpoint = isSignUpMode ? "/v1/auth/signup" : "/v1/auth/login";
 
             try {
-                const response = await fetch('http://localhost:8001/v1/chat/completions', {
+                const response = await fetch(`${RENDER_BACKEND_URL}${endpoint}`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${activeKey}`
-                    },
-                    body: JSON.stringify({
-                        model: "llama3.2",
-                        messages: [{ role: "user", content: messageText }],
-                        stream: false
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: emailInput, password: passInput })
                 });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    aiDiv.textContent = data.choices[0].message.content;
-                } else {
-                    aiDiv.textContent = `Error ${response.status}: ${data.detail || 'Access Denied'}`;
-                }
-            } catch (err) {
-                aiDiv.textContent = "Error: SmartAI API Connection Failed.";
-            }
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-    </script>
-</body>
-
-</html>
