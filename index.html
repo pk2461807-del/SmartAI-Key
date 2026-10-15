@@ -15,6 +15,7 @@
             --text-muted: #8b949e;
             --accent-blue: #58a6ff;
             --accent-green: #2ea44f;
+            --accent-red: #f85149;
         }
 
         body {
@@ -24,13 +25,95 @@
             color: var(--text-main);
             display: flex;
             height: 100vh;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
         }
 
-        /* डायरेक्ट डैशबोर्ड दिखाने के लिए फ्लेक्स सेट किया */
-        .dashboard-layout {
+        /* 🔐 Auth Container (लॉगिन और साइनअप के लिए) */
+        .auth-container {
+            background-color: var(--panel-dark);
+            border: 1px solid var(--border-color);
+            padding: 40px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
             display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .auth-header {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .auth-header span {
+            color: var(--accent-green);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .auth-input {
+            background-color: #070a0e;
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .btn-auth {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+
+        .btn-auth:hover {
+            background-color: #388bfd;
+        }
+
+        .switch-mode-text {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .switch-mode-text span {
+            color: var(--accent-blue);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* 🚀 Main Dashboard Layout */
+        .dashboard-layout {
+            display: none;
             width: 100%;
             height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: var(--bg-dark);
         }
 
         .sidebar {
@@ -191,10 +274,32 @@
 
 <body>
 
-    <!-- 🚀 2. सीधे मुख्य डैशबोर्ड लेआउट (लॉगिन स्क्रीन हमेशा के लिए हटा दी गई) -->
+    <!-- 🔐 1. SmartAI सुरक्षित लॉगिन / साइनअप स्क्रीन -->
+    <div class="auth-container" id="auth-screen">
+        <div class="auth-header" id="auth-title"><i class="fas fa-user-lock"></i> smartAI <span
+                style="color: var(--accent-blue);">SIGN IN</span></div>
+
+        <div class="input-group">
+            <label>Developer Email ID</label>
+            <input type="email" id="email" class="auth-input" value="admin@smartai.com">
+        </div>
+
+        <div class="input-group">
+            <label>Access Password</label>
+            <input type="password" id="password" class="auth-input" value="123456">
+        </div>
+
+        <button class="btn-auth" id="auth-main-btn" onclick="handleAuthAction()">Sign In to Console</button>
+
+        <div class="switch-mode-text" id="toggle-text">
+            Don't have an account? <span onclick="toggleAuthMode()">Sign Up here</span>
+        </div>
+    </div>
+
+    <!-- 🚀 2. मुख्य डैशबोर्ड लेआउट (सफल लॉगिन के बाद खुलेगा) -->
     <div class="dashboard-layout" id="main-dashboard">
 
-        <!-- बाएं हाथ की साइडबार पट्टी -->
+        <!-- Sidebar पट्टी -->
         <div class="sidebar">
             <div class="logo"><i class="fas fa-brain"></i> smartAI <span>KEY</span></div>
             <button class="btn-generate" onclick="generateKey()">
@@ -204,7 +309,6 @@
             <div class="keys-section">
                 <div class="keys-title">Your Active API Keys</div>
                 <div id="keys-list">
-                    <!-- चाबियाँ यहाँ दिखाई देंगी -->
                     <div class="key-item"
                         style="color: var(--text-muted); border-style: dashed; justify-content: center;">No active keys
                         found</div>
@@ -212,7 +316,7 @@
             </div>
         </div>
 
-        <!-- मुख्य प्लेग्राउंड एरिया -->
+        <!-- Main Content Area -->
         <div class="main-content">
             <div class="header-panel">
                 <h2 style="margin:0 0 10px 0; color: white;">Developer Cloud Gateway</h2>
@@ -227,7 +331,7 @@
                 </div>
 
                 <div class="chat-input-area">
-                    <input type="text" id="user-query" class="chat-input" placeholder="Ask anything to smartai...">
+                    <input type="text" id="user-query" class="chat-input" placeholder="Ask anything to SmartAI...">
                     <button class="btn-send" onclick="sendChatMessage()">Run API</button>
                 </div>
             </div>
@@ -235,81 +339,45 @@
 
     </div>
 
-    <!-- 🛠️ फंक्शनलिटी स्क्रिप्ट जो आपके रेंडर (Render) लाइव सर्वर से बात करेगी -->
+    <!-- Live System Script -->
     <script>
         const RENDER_BASE_URL = "https://onrender.com";
         let currentActiveKey = "";
 
-        // 🔑 1. लाइव चाबी बनाने का फंक्शन
-        async function generateKey() {
-            try {
-                const response = await fetch(`${RENDER_BASE_URL}/v1/keys/generate`, {
-                    method: 'POST'
-                });
-                const data = await response.json();
+        // लोकल डेटाबेस के लिए डिफ़ॉल्ट क्रेडेंशियल्स सेव करना
+        let isLoginMode = true;
+        let registeredUsers = {
+            "admin@smartai.com": "123456"
+        };
 
-                if (data.key) {
-                    currentActiveKey = data.key;
-                    const keysList = document.getElementById('keys-list');
+        // 🔄 लॉगिन और साइनअप मोड के बीच स्विच करने वाला फंक्शन (अब 100% वर्किंग)
+        function toggleAuthMode() {
+            const authTitle = document.getElementById('auth-title');
+            const mainBtn = document.getElementById('auth-main-btn');
+            const toggleText = document.getElementById('toggle-text');
+            const emailInput = document.getElementById('email');
+            const passInput = document.getElementById('password');
 
-                    // अगर पहले से 'No active keys' लिखा है तो उसे साफ़ करें
-                    if (keysList.innerHTML.includes("No active keys")) {
-                        keysList.innerHTML = "";
-                    }
+            isLoginMode = !isLoginMode;
 
-                    // नई चाबी लिस्ट में जोड़ें
-                    keysList.innerHTML += `<div class="key-item"><span>${data.key.substring(0, 10)}...</span> <i class="fas fa-check-circle" style="color: var(--accent-green)"></i></div>`;
-
-                    alert("🎉 Success! New SmartAI API Key Created.");
-                }
-            } catch (error) {
-                console.error(error);
-                alert("❌ Error: Connection failed with Render Cloud Server.");
+            if (!isLoginMode) {
+                // साइन अप मोड एक्टिव करें
+                authTitle.innerHTML = `<i class="fas fa-user-plus"></i> smartAI <span style="color: var(--accent-green);">SIGN UP</span>`;
+                mainBtn.innerText = "Register New Account";
+                mainBtn.style.backgroundColor = "var(--accent-green)";
+                toggleText.innerHTML = `Already have an account? <span onclick="toggleAuthMode()">Sign In here</span>`;
+                emailInput.value = "";
+                passInput.value = "";
+            } else {
+                // लॉगिन मोड एक्टिव करें
+                authTitle.innerHTML = `<i class="fas fa-user-lock"></i> smartAI <span style="color: var(--accent-blue);">SIGN IN</span>`;
+                mainBtn.innerText = "Sign In to Console";
+                mainBtn.style.backgroundColor = "var(--accent-blue)";
+                toggleText.innerHTML = `Don't have an account? <span onclick="toggleAuthMode()">Sign Up here</span>`;
+                emailInput.value = "admin@smartai.com";
+                passInput.value = "123456";
             }
         }
 
-        // 💬 2. चैट बॉक्स में मैसेज भेजने और AI रिप्लाई लाने का फंक्शन
-        async function sendChatMessage() {
-            const inputField = document.getElementById('user-query');
-            const chatBox = document.getElementById('chat-box');
-            const queryText = inputField.value.trim();
-
-            if (!queryText) return;
-
-            // यूजर का मैसेज स्क्रीन पर दिखाएं
-            chatBox.innerHTML += `<div class="msg user">${queryText}</div>`;
-            inputField.value = "";
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            // AI का लोडिंग मैसेज दिखाएं
-            const aiMsgId = "ai-" + Date.now();
-            chatBox.innerHTML += `<div class="msg ai" id="${aiMsgId}"><i class="fas fa-spinner fa-spin"></i> SmartAI is thinking...</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            try {
-                const response = await fetch(`${RENDER_BASE_URL}/v1/chat/completions`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentActiveKey}`
-                    },
-                    body: JSON.stringify({ message: queryText })
-                });
-
-                const data = await response.json();
-                const aiMessageElement = document.getElementById(aiMsgId);
-
-                if (data.reply) {
-                    aiMessageElement.innerHTML = data.reply;
-                } else {
-                    aiMessageElement.innerHTML = "⚠️ Server responded but no reply found.";
-                }
-            } catch (error) {
-                console.error(error);
-                document.getElementById(aiMsgId).innerHTML = "❌ Error: Failed to fetch reply from DeepSeek API via Render Cloud.";
-            }
-        }
-    </script>
-</body>
-
-</html>
+        // 🔐 लॉगिन और रजिस्ट्रेशन हैंडल करने का मुख्य फंक्शन
+        function handleAuthAction() {
